@@ -16,8 +16,12 @@ from .utils import flatten_obs, make_env, select_device, safe_weight_name, save_
 
 
 def load_checkpoint(path: Path, device: torch.device) -> Dict:
-    """Carga un checkpoint de PyTorch."""
-    return torch.load(path, map_location=device)
+    """Carga un checkpoint completo de PyTorch.
+
+    weights_only=False evita errores con versiones recientes de PyTorch cuando
+    el checkpoint contiene diccionarios con metadatos además de los pesos.
+    """
+    return torch.load(path, map_location=device, weights_only=False)
 
 
 def evaluate_checkpoint(ckpt_path: Path, eval_episodes: int, device: torch.device, seed: int) -> Dict:
@@ -88,7 +92,7 @@ def plot_front(df: pd.DataFrame, out_path: Path) -> None:
         front_sorted = front[np.argsort(front[:, 0])]
         plt.plot(front_sorted[:, 0], front_sorted[:, 1], marker="o", label="No dominadas")
     for _, row in df.iterrows():
-        label = str(row["weight"])
+        label = "[" + ",".join(f"{x:.2f}" for x in row["weight"]) + "]"
         plt.annotate(label, (row["mean_obj_0"], row["mean_obj_1"]), fontsize=8)
     plt.xlabel("Objetivo 0")
     plt.ylabel("Objetivo 1")
@@ -137,7 +141,8 @@ def main() -> None:
     save_json(run_dir / "metrics.json", metrics)
 
     print("Evaluación terminada.")
-    print(df)
+    pd.set_option("display.float_format", lambda x: f"{x:.3f}")
+    print(df.round(3).to_string(index=False))
     print(f"Resumen: {run_dir / 'evaluation_summary.csv'}")
     print(f"Figura: {run_dir / 'pareto_front.png'}")
     print(f"Métricas: {run_dir / 'metrics.json'}")

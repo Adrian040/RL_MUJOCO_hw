@@ -1,10 +1,7 @@
-numpy>=1.24
-pandas>=2.0
-matplotlib>=3.7
-tqdm>=4.66
-PyYAML>=6.0
-torch>=2.1
-gymnasium[mujoco]>=1.0.0
-mo-gymnasium>=1.2.0
-# Para comparar con la librería sugerida por la tarea:
-morl-baselines>=1.1.0
+numpy
+pandas
+matplotlib
+tqdm
+PyYAML
+mo-gymnasium[mujoco]
+morl-baselines
