@@ -1,0 +1,12 @@
+{
+  "env_id": "mo-halfcheetah-v5",
+  "total_timesteps": 500000,
+  "seed": 42,
+  "out_dir": "multi_objective_ppo/results/morl_baselines_pgmorl",
+  "device": "auto",
+  "num_envs": 4,
+  "pop_size": 6,
+  "warmup_iterations": 6,
+  "evolutionary_iterations": 3,
+  "steps_per_iteration": 1024
+}
