@@ -5,6 +5,4 @@ __pycache__/
 .DS_Store
 .ipynb_checkpoints/
 wandb/
-*.log
-multi_objective_ppo/results/**
 !multi_objective_ppo/results/.gitkeep
