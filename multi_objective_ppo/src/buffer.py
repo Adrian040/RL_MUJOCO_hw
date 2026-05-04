@@ -9,7 +9,6 @@ import torch
 @dataclass
 class RolloutBatch:
     """Tensores aplanados para actualizar PPO."""
-
     obs: torch.Tensor
     actions: torch.Tensor
     logprobs: torch.Tensor

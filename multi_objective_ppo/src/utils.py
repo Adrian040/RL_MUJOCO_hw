@@ -69,10 +69,9 @@ def make_env(env_id: str, seed: int):
 
 
 def flatten_obs(obs: Any) -> np.ndarray:
-    """Convierte observaciones a un vector float32."""
     return np.asarray(obs, dtype=np.float32).reshape(-1)
 
 
 def safe_weight_name(weight: np.ndarray) -> str:
-    """Crea un nombre corto y seguro para un vector de pesos."""
+    """Crea un nombre para un vector de pesos."""
     return "w_" + "_".join(f"{x:.2f}".replace(".", "p") for x in weight)
