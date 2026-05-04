@@ -1,0 +1,46 @@
+{
+  "experiment_name": "report_halfcheetah_seed_0",
+  "env_id": "mo-halfcheetah-v5",
+  "seed": 0,
+  "device": "auto",
+  "total_timesteps_per_weight": 100000,
+  "num_steps": 2048,
+  "update_epochs": 10,
+  "num_minibatches": 32,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip_coef": 0.2,
+  "ent_coef": 0.0,
+  "vf_coef": 0.5,
+  "max_grad_norm": 0.5,
+  "norm_adv": true,
+  "hidden_sizes": [
+    64,
+    64
+  ],
+  "eval_episodes": 5,
+  "weights": [
+    [
+      0.0,
+      1.0
+    ],
+    [
+      0.25,
+      0.75
+    ],
+    [
+      0.5,
+      0.5
+    ],
+    [
+      0.75,
+      0.25
+    ],
+    [
+      1.0,
+      0.0
+    ]
+  ],
+  "results_dir": "multi_objective_ppo/results/report_halfcheetah_seed_0"
+}
