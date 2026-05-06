@@ -2,7 +2,9 @@
 
 Implementaciones de aprendizaje por refuerzo multi-objetivo en ambientes MuJoCo usando `MO-Gymnasium`.
 
-El repositorio está organizado por caminos metodológicos. Cada implementación contiene su propio `README`, configuraciones, scripts de entrenamiento y evaluación.
+El repositorio está organizado por caminos metodológicos. Cada implementación (carpeta) contiene su propio `README`, configuraciones, scripts de entrenamiento y evaluación.
+
+Nota: Las versiones finales ya están contenidas en la rama master, no es necesario cambiar a las otras ramas en caso de bajar el repositorio.
 
 ## Caminos implementados
 
