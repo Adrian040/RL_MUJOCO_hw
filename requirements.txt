@@ -1,7 +1,2 @@
-numpy
-pandas
-matplotlib
-tqdm
-PyYAML
 mo-gymnasium[mujoco]
 morl-baselines
