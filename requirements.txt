@@ -1,2 +1,3 @@
+numpy==2.0
 mo-gymnasium[mujoco]
 morl-baselines
