@@ -1,0 +1,23 @@
+{
+  "experiment_name": "quick_hopper",
+  "env_id": "mo-hopper-v5",
+  "seed": 7,
+  "hidden_sizes": [
+    16
+  ],
+  "init_scale": 0.15,
+  "gene_low": -2.0,
+  "gene_high": 2.0,
+  "reference_divisions": 3,
+  "population_size": 10,
+  "generations": 3,
+  "train_episodes": 1,
+  "eval_episodes": 2,
+  "max_episode_steps": 300,
+  "crossover_prob": 1.0,
+  "eta_c": 30.0,
+  "mutation_prob": "auto",
+  "eta_m": 20.0,
+  "hv_samples": 20000,
+  "results_dir": "nsga_iii/results/quick_hopper"
+}

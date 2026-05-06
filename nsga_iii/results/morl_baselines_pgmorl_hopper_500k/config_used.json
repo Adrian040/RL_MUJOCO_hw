@@ -1,0 +1,12 @@
+{
+  "env_id": "mo-hopper-v5",
+  "total_timesteps": 300000,
+  "seed": 0,
+  "out_dir": "nsga_iii/results/morl_baselines_pgmorl_hopper_500k",
+  "device": "auto",
+  "num_envs": 4,
+  "pop_size": 7,
+  "warmup_iterations": 6,
+  "evolutionary_iterations": 4,
+  "steps_per_iteration": 2048
+}
