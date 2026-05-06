@@ -1,0 +1,23 @@
+{
+  "experiment_name": "report_hopper_seed_1",
+  "env_id": "mo-hopper-v5",
+  "seed": 1,
+  "hidden_sizes": [
+    32
+  ],
+  "init_scale": 0.2,
+  "gene_low": -2.5,
+  "gene_high": 2.5,
+  "reference_divisions": 7,
+  "population_size": "auto",
+  "generations": 30,
+  "train_episodes": 2,
+  "eval_episodes": 6,
+  "max_episode_steps": 500,
+  "crossover_prob": 1.0,
+  "eta_c": 30.0,
+  "mutation_prob": "auto",
+  "eta_m": 20.0,
+  "hv_samples": 100000,
+  "results_dir": "nsga_iii/results/report_hopper_seed_1"
+}

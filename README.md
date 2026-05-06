@@ -1,87 +1,41 @@
 # RL_MUJOCO_hw
 
-Implementaciones de aprendizaje por refuerzo multi-objetivo en ambientes MuJoCo usando `MO-Gymnasium`.
+Implementaciones para problemas MuJoCo multi-objetivo.
 
-El repositorio está organizado por caminos metodológicos. Cada implementación (carpeta) contiene su propio `README`, configuraciones, scripts de entrenamiento y evaluación.
-
-Nota: Las versiones finales ya están contenidas en la rama master, no es necesario cambiar a las otras ramas en caso de bajar el repositorio.
+**Nota:** Las versiones finales ya están contenidas en la rama master, no es necesario cambiar a las otras ramas en caso de bajar el repositorio.
 
 ## Caminos implementados
 
-### Descenso/Continuación
-- Multi-objective PPO
+- Descenso/Continuación: Multi-objective PPO
+- Basados en valor: Pareto Conditioned Networks
+- Basados en política/evolutivo: NSGA-III
 
-Carpeta:
+## Ambientes usados
+
+- `mo-halfcheetah-v5` para Multi-objective PPO y Pareto Conditioned Networks.
+- `mo-hopper-v5` para NSGA-III.
+
+## Organización
+
+Cada camino tiene su propia carpeta con configuración, código fuente, resultados y README específico:
+
 ```text
 multi_objective_ppo/
-```
-
-Incluye entrenamiento, evaluación, aproximación de frente de Pareto y comparación con `morl-baselines`.
-
----
-
-### Basados en valor
-- Pareto Conditioned Networks (PCN)
-
-Carpeta:
-```text
 pareto_conditioned_networks/
-```
-
-Implementación de PCN adaptada a MuJoCo continuo mediante un banco de acciones prototipo.
-
-Incluye entrenamiento condicionado por retornos deseados, evaluación multiobjetivo y comparación opcional contra MOPPO.
-
----
-
-## Caminos reservados
-
-```text
 nsga_iii/
 videos/
 ```
 
-**(Hasta este punto estos no se han realizado/implementado)**.
+## Reproducción general
 
----
+1. Instalar dependencias.
+2. Ejecutar el entrenamiento del camino correspondiente.
+3. Evaluar checkpoints o población final.
+4. Generar tablas, métricas y figuras.
+5. Comparar con un baseline de `morl-baselines` cuando sea posible.
 
-## Ambiente principal
+Las instrucciones concretas de ejecución están dentro del README de cada carpeta.
 
-```text
-mo-halfcheetah-v5
-```
-
----
-
-## Instalación
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## Ejecución
-
-Cada implementación tiene instrucciones específicas en su respectivo `README`.
-
-Ejemplo general:
-
-```bash
-python -m <metodo>.src.train --config <config.yaml>
-python -m <metodo>.src.evaluate --run-dir <results_dir>
-```
-
----
-
-## Notebooks
-
-El repositorio incluye notebooks de reporte y reproducción de experimentos:
-
-```text
-Tarea5_RL_AJMO.ipynb
-Tarea5_PCN_AJMO.ipynb
-```
 
 ---
 
@@ -103,9 +57,8 @@ Los scripts usan CUDA automáticamente cuando está disponible; en caso contrari
 
 ---
 
-## Limitaciones
+## Algunas imitaciones
 
-- Entrenamientos realizados con presupuesto computacional moderado.
-- Comparaciones con `morl-baselines` usadas como baseline aproximado.
+- Entrenamientos realizados con presupuesto computacional relativamente moderado (Colab version gratuita).
+- Comparaciones con `morl-baselines` usadas como baseline aproximado para NSGA-III y para Multi-objective PPO
 - La implementación de PCN adapta un método originalmente discreto a acciones continuas mediante discretización por banco de acciones.
-- NSGA-III queda pendiente como posible extensión.
