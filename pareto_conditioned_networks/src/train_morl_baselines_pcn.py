@@ -30,6 +30,35 @@ def plot_points(points: np.ndarray, out_path: Path) -> None:
     plt.close()
 
 
+def patch_morl_baselines_numpy2() -> None:
+    """Corrige compatibilidad de MORL-Baselines PCN con NumPy >= 2.0.
+
+    Algunas versiones de morl-baselines usan `points.ptp(axis=0)`, método que
+    fue eliminado de `ndarray` en NumPy 2.0. El parche sustituye únicamente la
+    función `crowding_distance` del módulo PCN por una versión equivalente que
+    usa `np.ptp(points, axis=0)`.
+    """
+    import morl_baselines.multi_policy.pcn.pcn as pcn_module
+
+    def crowding_distance_numpy2(points):
+        points = np.asarray(points, dtype=np.float64)
+        if points.size == 0:
+            return np.array([], dtype=np.float64)
+        if points.ndim == 1:
+            points = points.reshape(-1, 1)
+
+        points = (points - points.min(axis=0)) / (np.ptp(points, axis=0) + 1e-8)
+        dim_sorted = np.argsort(points, axis=0)
+        point_sorted = np.take_along_axis(points, dim_sorted, axis=0)
+        distances = np.abs(point_sorted[:-2] - point_sorted[2:])
+        distances = np.pad(distances, ((1,), (0,)), constant_values=1)
+        crowding = np.zeros(points.shape, dtype=np.float64)
+        crowding[dim_sorted, np.arange(points.shape[-1])] = distances
+        return np.sum(crowding, axis=-1)
+
+    pcn_module.crowding_distance = crowding_distance_numpy2
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Entrena el PCN oficial de MORL-Baselines.")
     parser.add_argument("--config", type=str, required=True)
@@ -37,6 +66,7 @@ def main() -> None:
     args = parser.parse_args()
 
     try:
+        patch_morl_baselines_numpy2()
         from morl_baselines.multi_policy.pcn.pcn import PCN
     except Exception as exc:
         raise RuntimeError("No se pudo importar MORL-Baselines. Instala con: pip install morl-baselines") from exc
