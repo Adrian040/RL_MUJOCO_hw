@@ -1,0 +1,3 @@
+Método,Soluciones evaluadas,Soluciones no dominadas,Mejor objetivo 0,Mejor objetivo 1,HV normalizado
+PCN local,7,3,24.025936996972504,-348.5916050553322,0.13317496621392855
+PCN MORL-Baselines,15,4,1.3602302074432373,-0.0522077456116676,0.5206166016815745
