@@ -39,16 +39,13 @@ def crowding_distance(points: np.ndarray) -> np.ndarray:
     maxs = points.max(axis=0)
     denom = np.where(maxs - mins == 0.0, 1.0, maxs - mins)
     norm = (points - mins) / denom
-
     dist = np.zeros(n, dtype=np.float64)
     for obj in range(points.shape[1]):
         order = np.argsort(norm[:, obj])
         dist[order[0]] += 1.0
         dist[order[-1]] += 1.0
         for j in range(1, n - 1):
-            lower_idx = order[j - 1]
-            upper_idx = order[j + 1]
-            dist[order[j]] += norm[upper_idx, obj] - norm[lower_idx, obj]
+            dist[order[j]] += norm[order[j + 1], obj] - norm[order[j - 1], obj]
     return dist / max(points.shape[1], 1)
 
 
@@ -56,16 +53,13 @@ def pruning_scores(points: np.ndarray, crowding_threshold: float = 0.2, crowding
     points = np.asarray(points, dtype=np.float64)
     if len(points) == 0:
         return np.array([], dtype=np.float64)
-
     front = pareto_front(points)
     if len(front) == 0:
         return np.zeros(len(points), dtype=np.float64)
-
     distances = np.zeros(len(points), dtype=np.float64)
     for i, p in enumerate(points):
         distances[i] = np.min(np.linalg.norm(front - p, axis=1))
     il2 = -distances
-
     cd = crowding_distance(points)
     scores = il2.copy()
     crowded = cd <= crowding_threshold
@@ -80,16 +74,13 @@ def hypervolume_2d(points: np.ndarray, reference: np.ndarray | None = None) -> T
     if len(pts) == 0:
         ref = np.zeros(2, dtype=np.float64) if reference is None else np.asarray(reference, dtype=np.float64)
         return 0.0, ref
-
     if reference is None:
         margin = 0.05 * np.maximum(np.ptp(pts, axis=0), 1.0)
         reference = pts.min(axis=0) - margin
     reference = np.asarray(reference, dtype=np.float64)
-
     pts = pts[np.all(pts > reference, axis=1)]
     if len(pts) == 0:
         return 0.0, reference
-
     pts = pts[np.argsort(pts[:, 0])]
     hv = 0.0
     previous_x = reference[0]

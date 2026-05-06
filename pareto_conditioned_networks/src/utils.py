@@ -40,10 +40,13 @@ def select_device(device: str) -> torch.device:
     return requested
 
 
-def make_env(env_id: str, seed: int):
+def make_env(env_id: str, seed: int, max_episode_steps: int | None = None):
+    import gymnasium as gym
     import mo_gymnasium as mo_gym
 
     env = mo_gym.make(env_id)
+    if max_episode_steps is not None:
+        env = gym.wrappers.TimeLimit(env, max_episode_steps=max_episode_steps)
     env.reset(seed=seed)
     env.action_space.seed(seed)
     env.observation_space.seed(seed)
@@ -55,19 +58,10 @@ def flatten_obs(obs: Any) -> np.ndarray:
 
 
 def infer_reward_dim(env) -> int:
-    if hasattr(env, "reward_space"):
-        return int(np.asarray(env.reward_space.sample()).reshape(-1).shape[0])
+    if hasattr(env.unwrapped, "reward_space"):
+        return int(np.asarray(env.unwrapped.reward_space.sample()).reshape(-1).shape[0])
     obs, _ = env.reset()
     action = env.action_space.sample()
     _, reward_vec, _, _, _ = env.step(action)
     env.reset()
     return int(np.asarray(reward_vec).reshape(-1).shape[0])
-
-
-def as_float_array(x: Any) -> np.ndarray:
-    return np.asarray(x, dtype=np.float32)
-
-
-def format_vector(values) -> str:
-    arr = np.asarray(values, dtype=float).reshape(-1)
-    return "[" + ",".join(f"{v:.2f}" for v in arr) + "]"

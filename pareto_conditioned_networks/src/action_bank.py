@@ -9,9 +9,7 @@ def build_action_bank(action_low: np.ndarray, action_high: np.ndarray, bank_size
     high = np.asarray(action_high, dtype=np.float32).reshape(-1)
     action_dim = low.shape[0]
 
-    actions = []
-    actions.append(np.zeros(action_dim, dtype=np.float32))
-
+    actions = [np.zeros(action_dim, dtype=np.float32)]
     for dim in range(action_dim):
         a_pos = np.zeros(action_dim, dtype=np.float32)
         a_neg = np.zeros(action_dim, dtype=np.float32)

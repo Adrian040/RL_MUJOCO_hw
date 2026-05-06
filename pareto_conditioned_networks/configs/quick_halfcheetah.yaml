@@ -23,4 +23,19 @@ stochastic_train_policy: true
 
 num_eval_targets: 8
 eval_episodes: 3
+
+baseline_total_timesteps: 12000
+baseline_num_er_episodes: 8
+baseline_num_step_episodes: 3
+baseline_num_model_updates: 80
+baseline_max_buffer_size: 80
+baseline_num_points_pf: 8
+baseline_learning_rate: 0.0003
+baseline_batch_size: 256
+baseline_hidden_dim: 64
+baseline_noise: 0.2
+baseline_scaling_factor: [0.01, 0.01, 0.01]
+baseline_ref_point: [0.0, -1000.0]
+baseline_max_return: [10000.0, 1000.0]
+
 results_dir: pareto_conditioned_networks/results/quick_halfcheetah

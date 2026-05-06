@@ -61,7 +61,6 @@ def main() -> None:
     run_dirs = [Path(p) for p in args.runs]
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-
     all_df = pd.concat([load_run(p) for p in run_dirs], ignore_index=True)
     all_df.to_csv(out_dir / "all_seed_evaluations.csv", index=False)
 
@@ -74,7 +73,6 @@ def main() -> None:
         metrics["reference_point"] = ref.tolist()
         metrics["global_pareto_points"] = pareto_front(points).tolist()
         metrics["num_global_nondominated"] = int(len(pareto_front(points)))
-
         hv_by_seed: List[Dict[str, float]] = []
         for seed, sub in all_df.groupby("seed"):
             hv_s, _ = hypervolume_2d(sub[obj_cols].to_numpy(dtype=np.float64), reference=ref)
@@ -85,21 +83,11 @@ def main() -> None:
         metrics["std_hypervolume_2d"] = float(hv_df["hypervolume_2d"].std(ddof=1)) if len(hv_df) > 1 else 0.0
         plot_all_points(all_df, out_dir / "multi_seed_pcn_front.png")
 
-    summary_cols = obj_cols + ["mean_episode_length"]
+    summary_cols = obj_cols + ["mean_episode_length"] if "mean_episode_length" in all_df.columns else obj_cols
     agg = all_df.groupby("seed", as_index=False)[summary_cols].mean()
     agg.to_csv(out_dir / "summary_by_seed.csv", index=False)
     save_json(out_dir / "aggregate_metrics.json", metrics)
-
-    pd.set_option("display.float_format", lambda x: f"{x:.3f}")
-    print("Resumen por semilla:")
     print(agg.round(3).to_string(index=False))
-    if metrics:
-        print("\nMétricas globales:")
-        for k, v in metrics.items():
-            if isinstance(v, float):
-                print(f"{k}: {v:.3f}")
-            else:
-                print(f"{k}: {v}")
 
 
 if __name__ == "__main__":

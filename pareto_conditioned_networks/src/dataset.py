@@ -54,13 +54,10 @@ def prune_episodes(episodes: List[Dict], max_trajectories: int, crowding_thresho
     return [ep for i, ep in enumerate(episodes) if i in keep]
 
 
-def sample_batch(episodes: List[Dict], batch_size: int, rng: np.random.Generator) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def sample_batch(episodes: List[Dict], batch_size: int, rng: np.random.Generator) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     if not episodes:
         raise ValueError("No hay trayectorias disponibles para entrenar.")
-
-    obs_batch = []
-    cond_batch = []
-    actions = []
+    obs_batch, cond_batch, actions = [], [], []
     for _ in range(batch_size):
         ep = episodes[int(rng.integers(0, len(episodes)))]
         t = int(rng.integers(0, ep["length"]))
@@ -69,13 +66,7 @@ def sample_batch(episodes: List[Dict], batch_size: int, rng: np.random.Generator
         obs_batch.append(ep["observations"][t])
         cond_batch.append(cond.astype(np.float32))
         actions.append(int(ep["action_indices"][t]))
-
-    return (
-        np.stack(obs_batch, axis=0).astype(np.float32),
-        np.stack(cond_batch, axis=0).astype(np.float32),
-        np.asarray(actions, dtype=np.int64),
-        np.zeros(batch_size, dtype=np.float32),
-    )
+    return np.stack(obs_batch).astype(np.float32), np.stack(cond_batch).astype(np.float32), np.asarray(actions, dtype=np.int64)
 
 
 def compute_normalizer(episodes: List[Dict], obs_dim: int, reward_dim: int) -> Dict[str, np.ndarray]:
@@ -86,9 +77,7 @@ def compute_normalizer(episodes: List[Dict], obs_dim: int, reward_dim: int) -> D
             "cond_mean": np.zeros(reward_dim + 1, dtype=np.float32),
             "cond_std": np.ones(reward_dim + 1, dtype=np.float32),
         }
-
-    obs = []
-    cond = []
+    obs, cond = [], []
     for ep in episodes:
         obs.append(ep["observations"])
         for t in range(ep["length"]):
@@ -96,7 +85,6 @@ def compute_normalizer(episodes: List[Dict], obs_dim: int, reward_dim: int) -> D
             cond.append(np.concatenate([[horizon], ep["remaining_returns"][t]]))
     obs = np.concatenate(obs, axis=0).astype(np.float32)
     cond = np.stack(cond, axis=0).astype(np.float32)
-
     return {
         "obs_mean": obs.mean(axis=0).astype(np.float32),
         "obs_std": np.maximum(obs.std(axis=0), 1e-6).astype(np.float32),

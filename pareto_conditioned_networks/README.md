@@ -8,16 +8,17 @@ PCN transforma el problema de aprendizaje por refuerzo multi-objetivo en un prob
 (s_t, h_t, R_t) \rightarrow a_t,
 \]
 
-donde `s_t` es el estado, `h_t` es el horizonte restante, `R_t` es el retorno vectorial restante y `a_t` es la acción que produjo ese retorno en la trayectoria observada. La política se condiciona por el retorno deseado y aprende a seleccionar acciones que reproduzcan trayectorias que alcanzan compromisos específicos entre objetivos.
+donde `s_t` es el estado, `h_t` es el horizonte restante, `R_t` es el retorno vectorial restante y `a_t` es la acción tomada en la trayectoria observada. La política se condiciona por un retorno deseado y aprende a seleccionar acciones que reproduzcan trayectorias asociadas con distintos compromisos entre objetivos.
 
-El artículo original usa acciones discretas. Para usar MuJoCo continuo, esta versión emplea un banco fijo de acciones prototipo. La red clasifica sobre ese banco y cada clase corresponde a una acción continua. Esta adaptación conserva el entrenamiento supervisado de PCN, aunque limita la resolución del espacio de acciones.
+El artículo original formula PCN de manera natural para acciones discretas. Para usar MuJoCo continuo, esta versión emplea un banco fijo de acciones prototipo: la red clasifica sobre ese banco y cada clase corresponde a una acción continua. La comparación oficial se realiza contra el PCN de `morl-baselines`, que incluye una variante con acciones continuas.
 
 ## Archivos principales
 
-- `src/train.py`: entrena PCN y guarda dataset, checkpoints y métricas.
-- `src/evaluate.py`: evalúa el checkpoint condicionado en objetivos no dominados.
+- `src/train.py`: entrena la implementación local de PCN.
+- `src/evaluate.py`: evalúa el checkpoint local condicionado en retornos no dominados.
+- `src/train_morl_baselines_pcn.py`: entrena y evalúa el PCN oficial de `morl-baselines`.
+- `src/compare_morl_baselines.py`: compara la implementación local contra el baseline oficial.
 - `src/aggregate_seeds.py`: agrega resultados de varias semillas.
-- `src/compare_moppo.py`: comparación opcional contra resultados ya generados de MOPPO.
 - `src/networks.py`: arquitectura condicionada por estado, retorno deseado y horizonte.
 - `src/dataset.py`: almacenamiento de trayectorias, muestreo y poda del dataset.
 - `src/pareto.py`: dominancia, frente no dominado, crowding distance e hipervolumen.
@@ -30,6 +31,14 @@ python -m pareto_conditioned_networks.src.train \
 
 python -m pareto_conditioned_networks.src.evaluate \
   --run-dir pareto_conditioned_networks/results/quick_halfcheetah
+
+python -m pareto_conditioned_networks.src.train_morl_baselines_pcn \
+  --config pareto_conditioned_networks/configs/quick_halfcheetah.yaml
+
+python -m pareto_conditioned_networks.src.compare_morl_baselines \
+  --local-run pareto_conditioned_networks/results/quick_halfcheetah \
+  --baseline-run pareto_conditioned_networks/results/quick_halfcheetah/morl_baselines_pcn \
+  --out-dir pareto_conditioned_networks/results/quick_halfcheetah/comparison_morl_baselines
 ```
 
 ## Ejecución para reporte
@@ -40,6 +49,14 @@ python -m pareto_conditioned_networks.src.train \
 
 python -m pareto_conditioned_networks.src.evaluate \
   --run-dir pareto_conditioned_networks/results/report_halfcheetah
+
+python -m pareto_conditioned_networks.src.train_morl_baselines_pcn \
+  --config pareto_conditioned_networks/configs/report_halfcheetah.yaml
+
+python -m pareto_conditioned_networks.src.compare_morl_baselines \
+  --local-run pareto_conditioned_networks/results/report_halfcheetah \
+  --baseline-run pareto_conditioned_networks/results/report_halfcheetah/morl_baselines_pcn \
+  --out-dir pareto_conditioned_networks/results/report_halfcheetah/comparison_morl_baselines
 ```
 
 ## Salidas generadas
@@ -50,15 +67,6 @@ python -m pareto_conditioned_networks.src.evaluate \
 - `metrics.json`
 - `pcn_coverage.png`
 - `pcn_evaluation_front.png`
-- `checkpoints/pcn_final.pt`
-
-## Comparación con MOPPO
-
-Si ya existen resultados de MOPPO:
-
-```bash
-python -m pareto_conditioned_networks.src.compare_moppo \
-  --pcn-run pareto_conditioned_networks/results/report_halfcheetah_seed_1 \
-  --moppo-run multi_objective_ppo/results/report_halfcheetah_seed_1 \
-  --out-dir pareto_conditioned_networks/results/comparison_pcn_vs_moppo
-```
+- `morl_baselines_pcn/evaluation_summary.csv`
+- `comparison_morl_baselines/comparison_local_vs_morl_baselines.csv`
+- `comparison_morl_baselines/comparison_local_vs_morl_baselines.png`
