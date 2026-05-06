@@ -34,7 +34,6 @@ def crowding_distance(points: np.ndarray) -> np.ndarray:
         return np.array([], dtype=np.float64)
     if n <= 2:
         return np.ones(n, dtype=np.float64)
-
     mins = points.min(axis=0)
     maxs = points.max(axis=0)
     denom = np.where(maxs - mins == 0.0, 1.0, maxs - mins)

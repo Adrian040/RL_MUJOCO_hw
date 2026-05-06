@@ -11,7 +11,7 @@ import torch
 import torch.nn.functional as F
 from tqdm import tqdm
 
-from .action_bank import action_from_index, build_action_bank
+from .action_bank import action_bank_size, action_from_index, build_action_bank
 from .dataset import compute_normalizer, lengths_array, make_episode, nondominated_episode_indices, prune_episodes, returns_array, sample_batch
 from .networks import PCNPolicy
 from .pareto import hypervolume_2d, pareto_front
@@ -33,7 +33,7 @@ def collect_random_episode(env, action_bank: np.ndarray, gamma: float, max_episo
     steps = 0
     while not done and steps < max_episode_steps:
         obs_vec = flatten_obs(obs)
-        action_idx = int(rng.integers(0, len(action_bank)))
+        action_idx = int(rng.integers(0, action_bank_size(action_bank)))
         next_obs, reward_vec, terminated, truncated, _ = env.step(action_from_index(action_bank, action_idx))
         observations.append(obs_vec)
         action_indices.append(action_idx)
@@ -101,7 +101,13 @@ def train_network(model, optimizer, episodes, normalizer, updates, batch_size, d
 
 def log_dataset_state(episodes: List[Dict], iteration: int, phase: str) -> Dict:
     points = returns_array(episodes)
-    out = {"iteration": iteration, "phase": phase, "num_trajectories": len(episodes), "num_transitions": int(sum(ep["length"] for ep in episodes)), "mean_length": float(lengths_array(episodes).mean()) if episodes else 0.0}
+    out = {
+        "iteration": iteration,
+        "phase": phase,
+        "num_trajectories": len(episodes),
+        "num_transitions": int(sum(ep["length"] for ep in episodes)),
+        "mean_length": float(lengths_array(episodes).mean()) if episodes else 0.0,
+    }
     if len(points) > 0:
         front = pareto_front(points)
         out["num_nondominated"] = int(len(front))
@@ -117,7 +123,7 @@ def log_dataset_state(episodes: List[Dict], iteration: int, phase: str) -> Dict:
 
 
 def plot_dataset(points: np.ndarray, out_path: Path) -> None:
-    if points.ndim != 2 or points.shape[1] != 2 or len(points) == 0:
+    if points.ndim != 2 or points.shape[1] < 2 or len(points) == 0:
         return
     front = pareto_front(points)
     plt.figure(figsize=(7, 5))
@@ -152,12 +158,11 @@ def main() -> None:
     env = make_env(config["env_id"], seed, int(config["max_episode_steps"]))
     obs, _ = env.reset(seed=seed)
     obs_dim = int(np.asarray(obs).reshape(-1).shape[0])
-    action_dim = int(np.prod(env.action_space.shape))
     reward_dim = infer_reward_dim(env)
-    action_bank = build_action_bank(env.action_space.low.reshape(-1), env.action_space.high.reshape(-1), int(config["action_bank_size"]), seed)
+    action_bank = build_action_bank(env.action_space, int(config["action_bank_size"]), seed)
     np.save(run_dir / "action_bank.npy", action_bank)
 
-    model = PCNPolicy(obs_dim, reward_dim + 1, len(action_bank), int(config.get("embedding_dim", 64)), int(config.get("hidden_dim", 64))).to(device)
+    model = PCNPolicy(obs_dim, reward_dim + 1, action_bank_size(action_bank), int(config.get("embedding_dim", 64)), int(config.get("hidden_dim", 64))).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=float(config["learning_rate"]))
     episodes: List[Dict] = []
     logs: List[Dict] = []
@@ -166,7 +171,7 @@ def main() -> None:
 
     print(f"Ambiente: {config['env_id']}")
     print(f"Dispositivo: {device}")
-    print(f"Acciones prototipo: {len(action_bank)}")
+    print(f"Acciones prototipo/clases: {action_bank_size(action_bank)}")
     print(f"Resultados: {run_dir}")
 
     for _ in tqdm(range(int(config["random_episodes"])), desc="Recolectando episodios iniciales"):
@@ -191,7 +196,7 @@ def main() -> None:
     points = returns_array(episodes)
     pd.DataFrame(points, columns=[f"return_obj_{i}" for i in range(points.shape[1])]).to_csv(run_dir / "dataset_coverage.csv", index=False)
     plot_dataset(points, run_dir / "pcn_coverage.png")
-    torch.save({"model_state_dict": model.state_dict(), "config": config, "obs_dim": obs_dim, "action_dim": action_dim, "reward_dim": reward_dim, "action_bank": action_bank, "normalizer": normalizer, "episodes": episodes}, run_dir / "checkpoints" / "pcn_final.pt")
+    torch.save({"model_state_dict": model.state_dict(), "config": config, "obs_dim": obs_dim, "reward_dim": reward_dim, "action_bank": action_bank, "normalizer": normalizer, "episodes": episodes}, run_dir / "checkpoints" / "pcn_final.pt")
     env.close()
     print("Entrenamiento terminado.")
     print(f"Checkpoint: {run_dir / 'checkpoints' / 'pcn_final.pt'}")

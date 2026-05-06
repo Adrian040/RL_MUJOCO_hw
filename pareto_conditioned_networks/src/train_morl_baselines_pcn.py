@@ -9,35 +9,10 @@ import numpy as np
 import pandas as pd
 
 from .pareto import hypervolume_2d, pareto_front
-from .utils import load_config, make_env, save_json, select_device, set_seed
-
-
-def plot_points(points: np.ndarray, out_path: Path) -> None:
-    if points.ndim != 2 or points.shape[1] != 2 or len(points) == 0:
-        return
-    front = pareto_front(points)
-    plt.figure(figsize=(7, 5))
-    plt.scatter(points[:, 0], points[:, 1], s=70, label="MORL-Baselines PCN")
-    if len(front) > 0:
-        front_sorted = front[np.argsort(front[:, 0])]
-        plt.plot(front_sorted[:, 0], front_sorted[:, 1], marker="o", linewidth=2, label="No dominadas")
-    plt.xlabel("Objetivo 0")
-    plt.ylabel("Objetivo 1")
-    plt.title("Baseline oficial: PCN de MORL-Baselines")
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(out_path, dpi=200)
-    plt.close()
+from .utils import infer_reward_dim, load_config, make_env, save_json, select_device, set_seed
 
 
 def patch_morl_baselines_numpy2() -> None:
-    """Corrige compatibilidad de MORL-Baselines PCN con NumPy >= 2.0.
-
-    Algunas versiones de morl-baselines usan `points.ptp(axis=0)`, método que
-    fue eliminado de `ndarray` en NumPy 2.0. El parche sustituye únicamente la
-    función `crowding_distance` del módulo PCN por una versión equivalente que
-    usa `np.ptp(points, axis=0)`.
-    """
     import morl_baselines.multi_policy.pcn.pcn as pcn_module
 
     def crowding_distance_numpy2(points):
@@ -46,7 +21,6 @@ def patch_morl_baselines_numpy2() -> None:
             return np.array([], dtype=np.float64)
         if points.ndim == 1:
             points = points.reshape(-1, 1)
-
         points = (points - points.min(axis=0)) / (np.ptp(points, axis=0) + 1e-8)
         dim_sorted = np.argsort(points, axis=0)
         point_sorted = np.take_along_axis(points, dim_sorted, axis=0)
@@ -57,6 +31,40 @@ def patch_morl_baselines_numpy2() -> None:
         return np.sum(crowding, axis=-1)
 
     pcn_module.crowding_distance = crowding_distance_numpy2
+
+
+def auto_vector(value, reward_dim: int, kind: str) -> np.ndarray:
+    if value != "auto":
+        arr = np.asarray(value, dtype=np.float32).reshape(-1)
+        if len(arr) == reward_dim:
+            return arr
+        if kind == "scaling" and len(arr) == reward_dim + 1:
+            return arr
+    if kind == "scaling":
+        return np.asarray([0.01] * (reward_dim + 1), dtype=np.float32)
+    if kind == "ref":
+        return np.asarray([-1000.0] * reward_dim, dtype=np.float32)
+    if kind == "max_return":
+        return np.asarray([10000.0] * reward_dim, dtype=np.float32)
+    raise ValueError(kind)
+
+
+def plot_points(points: np.ndarray, out_path: Path) -> None:
+    if points.ndim != 2 or points.shape[1] < 2 or len(points) == 0:
+        return
+    front = pareto_front(points)
+    plt.figure(figsize=(7, 5))
+    plt.scatter(points[:, 0], points[:, 1], s=70, label="MORL-Baselines PCN")
+    if len(front) > 0 and front.shape[1] >= 2:
+        front_sorted = front[np.argsort(front[:, 0])]
+        plt.plot(front_sorted[:, 0], front_sorted[:, 1], marker="o", linewidth=2, label="No dominadas")
+    plt.xlabel("Objetivo 0")
+    plt.ylabel("Objetivo 1")
+    plt.title("Baseline oficial: PCN de MORL-Baselines")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=200)
+    plt.close()
 
 
 def main() -> None:
@@ -81,10 +89,11 @@ def main() -> None:
     max_episode_steps = int(config["max_episode_steps"])
     env = make_env(config["env_id"], seed, max_episode_steps)
     eval_env = make_env(config["env_id"], seed + 9999, max_episode_steps)
+    reward_dim = infer_reward_dim(env)
 
-    ref_point = np.asarray(config.get("baseline_ref_point", [0.0, -1000.0]), dtype=np.float32)
-    max_return = np.asarray(config.get("baseline_max_return", [10000.0, 1000.0]), dtype=np.float32)
-    scaling_factor = np.asarray(config.get("baseline_scaling_factor", [0.01, 0.01, 0.01]), dtype=np.float32)
+    ref_point = auto_vector(config.get("baseline_ref_point", "auto"), reward_dim, "ref")
+    max_return = auto_vector(config.get("baseline_max_return", "auto"), reward_dim, "max_return")
+    scaling_factor = auto_vector(config.get("baseline_scaling_factor", "auto"), reward_dim, "scaling")
 
     agent = PCN(
         env=env,
@@ -135,12 +144,13 @@ def main() -> None:
     plot_points(e_returns, out_dir / "morl_baselines_pcn_front.png")
 
     metrics: Dict[str, object] = {}
-    if e_returns.ndim == 2 and e_returns.shape[1] == 2:
-        hv, ref = hypervolume_2d(e_returns)
-        metrics["hypervolume_2d_auto_reference"] = float(hv)
-        metrics["reference_point"] = ref.tolist()
-        metrics["pareto_points"] = pareto_front(e_returns).tolist()
+    if e_returns.ndim == 2:
         metrics["num_nondominated"] = int(len(pareto_front(e_returns)))
+        metrics["pareto_points"] = pareto_front(e_returns).tolist()
+        if e_returns.shape[1] == 2:
+            hv, ref = hypervolume_2d(e_returns)
+            metrics["hypervolume_2d_auto_reference"] = float(hv)
+            metrics["reference_point"] = ref.tolist()
     save_json(out_dir / "metrics.json", metrics)
     save_json(out_dir / "config_used.json", config)
     print("Baseline MORL-Baselines PCN terminado.")

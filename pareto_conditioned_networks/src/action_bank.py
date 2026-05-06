@@ -1,12 +1,19 @@
 from __future__ import annotations
 
 import numpy as np
+from gymnasium import spaces
 
 
-def build_action_bank(action_low: np.ndarray, action_high: np.ndarray, bank_size: int, seed: int) -> np.ndarray:
+def build_action_bank(action_space, bank_size: int, seed: int) -> np.ndarray:
+    if isinstance(action_space, spaces.Discrete):
+        return np.arange(action_space.n, dtype=np.int64)
+
+    if not isinstance(action_space, spaces.Box):
+        raise TypeError(f"Espacio de acción no soportado: {type(action_space)}")
+
     rng = np.random.default_rng(seed)
-    low = np.asarray(action_low, dtype=np.float32).reshape(-1)
-    high = np.asarray(action_high, dtype=np.float32).reshape(-1)
+    low = np.asarray(action_space.low, dtype=np.float32).reshape(-1)
+    high = np.asarray(action_space.high, dtype=np.float32).reshape(-1)
     action_dim = low.shape[0]
 
     actions = [np.zeros(action_dim, dtype=np.float32)]
@@ -26,5 +33,11 @@ def build_action_bank(action_low: np.ndarray, action_high: np.ndarray, bank_size
     return np.clip(bank, low, high)
 
 
-def action_from_index(action_bank: np.ndarray, index: int) -> np.ndarray:
+def action_from_index(action_bank: np.ndarray, index: int):
+    if action_bank.ndim == 1 and np.issubdtype(action_bank.dtype, np.integer):
+        return int(action_bank[int(index)])
     return np.asarray(action_bank[int(index)], dtype=np.float32)
+
+
+def action_bank_size(action_bank: np.ndarray) -> int:
+    return int(len(action_bank))

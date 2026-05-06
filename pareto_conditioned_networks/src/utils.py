@@ -15,6 +15,13 @@ def load_config(path: str | Path) -> Dict[str, Any]:
         return yaml.safe_load(f)
 
 
+def save_yaml(path: str | Path, data: Dict[str, Any]) -> None:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        yaml.safe_dump(data, f, sort_keys=False)
+
+
 def save_json(path: str | Path, data: Dict[str, Any]) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -58,10 +65,15 @@ def flatten_obs(obs: Any) -> np.ndarray:
 
 
 def infer_reward_dim(env) -> int:
-    if hasattr(env.unwrapped, "reward_space"):
-        return int(np.asarray(env.unwrapped.reward_space.sample()).reshape(-1).shape[0])
+    target_env = getattr(env, "unwrapped", env)
+    if hasattr(target_env, "reward_space"):
+        return int(np.asarray(target_env.reward_space.sample()).reshape(-1).shape[0])
     obs, _ = env.reset()
     action = env.action_space.sample()
     _, reward_vec, _, _, _ = env.step(action)
     env.reset()
     return int(np.asarray(reward_vec).reshape(-1).shape[0])
+
+
+def env_dir_name(env_id: str) -> str:
+    return env_id.replace("-", "_").replace("/", "_")

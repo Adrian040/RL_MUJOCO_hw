@@ -63,12 +63,12 @@ def plot_evaluation(df: pd.DataFrame, dataset_points: np.ndarray, out_path: Path
     if "mean_obj_0" not in df.columns or "mean_obj_1" not in df.columns:
         return
     eval_points = df[["mean_obj_0", "mean_obj_1"]].to_numpy(dtype=np.float64)
-    front = pareto_front(eval_points)
+    front = pareto_front(df[[c for c in df.columns if c.startswith("mean_obj_")]].to_numpy(dtype=np.float64))
     plt.figure(figsize=(7, 5))
-    if dataset_points.ndim == 2 and dataset_points.shape[1] == 2:
+    if dataset_points.ndim == 2 and dataset_points.shape[1] >= 2:
         plt.scatter(dataset_points[:, 0], dataset_points[:, 1], alpha=0.25, label="Dataset")
     plt.scatter(eval_points[:, 0], eval_points[:, 1], s=70, label="Evaluación PCN")
-    if len(front) > 0:
+    if len(front) > 0 and front.shape[1] >= 2:
         front_sorted = front[np.argsort(front[:, 0])]
         plt.plot(front_sorted[:, 0], front_sorted[:, 1], marker="o", linewidth=2, label="No dominadas")
     plt.xlabel("Objetivo 0")
@@ -128,13 +128,13 @@ def main() -> None:
 
     metrics = {}
     obj_cols = [c for c in df.columns if c.startswith("mean_obj_")]
+    points = df[obj_cols].to_numpy(dtype=np.float64)
+    metrics["num_nondominated"] = int(len(pareto_front(points)))
+    metrics["pareto_points"] = pareto_front(points).tolist()
     if len(obj_cols) == 2:
-        points = df[obj_cols].to_numpy(dtype=np.float64)
         hv, ref = hypervolume_2d(points)
         metrics["hypervolume_2d_auto_reference"] = hv
         metrics["reference_point"] = ref.tolist()
-        metrics["pareto_points"] = pareto_front(points).tolist()
-        metrics["num_nondominated"] = int(len(pareto_front(points)))
     save_json(run_dir / "metrics.json", metrics)
     print("Evaluación terminada.")
     print(df.round(3).to_string(index=False))
