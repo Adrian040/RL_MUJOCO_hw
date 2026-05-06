@@ -1,0 +1,14 @@
+{
+  "num_nondominated": 1,
+  "pareto_points": [
+    [
+      0.7926135361194611,
+      8.290009507909417
+    ]
+  ],
+  "hypervolume_2d_auto_reference": 0.0025000000000000378,
+  "reference_point": [
+    0.742613536119461,
+    8.240009507909416
+  ]
+}
