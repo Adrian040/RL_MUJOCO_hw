@@ -8,4 +8,3 @@ PyYAML>=6.0
 gymnasium[mujoco]>=1.0
 mujoco>=3.2
 mo-gymnasium[mujoco]>=1.3
-morl-baselines>=1.1.0
