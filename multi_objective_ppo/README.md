@@ -18,7 +18,7 @@ python -m multi_objective_ppo.src.train --config multi_objective_ppo/configs/qui
 python -m multi_objective_ppo.src.evaluate --run-dir multi_objective_ppo/results/quick_halfcheetah
 ```
 
-## Ejecución final
+## Ejecución final para el reporte
 
 ```bash
 python -m multi_objective_ppo.src.train --config multi_objective_ppo/configs/report_halfcheetah.yaml

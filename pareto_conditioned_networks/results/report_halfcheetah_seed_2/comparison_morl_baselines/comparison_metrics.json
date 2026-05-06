@@ -1,0 +1,16 @@
+{
+  "ideal": [
+    0.7196866273880005,
+    -0.0673982053995132
+  ],
+  "nadir": [
+    -4.529819897349023,
+    -434.8644018173218
+  ],
+  "reference_normalized": [
+    -0.05,
+    -0.05
+  ],
+  "hypervolume_local_normalized": 0.04841015536697457,
+  "hypervolume_morl_baselines_normalized": 1.1024977509995386
+}

@@ -1,0 +1,6 @@
+Collecting morl-baselines
+  Downloading morl_baselines-1.2.0-py3-none-any.whl.metadata (13 kB)
+Downloading morl_baselines-1.2.0-py3-none-any.whl (140 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 140.8/140.8 kB 13.4 MB/s eta 0:00:00
+Installing collected packages: morl-baselines
+Successfully installed morl-baselines-1.2.0

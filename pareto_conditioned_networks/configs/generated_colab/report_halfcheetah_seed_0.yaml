@@ -1,0 +1,43 @@
+experiment_name: report_halfcheetah_seed_0
+env_id: mo-halfcheetah-v5
+seed: 0
+device: auto
+max_episode_steps: 300
+random_episodes: 40
+iterations: 35
+episodes_per_iteration: 6
+updates_per_iteration: 250
+batch_size: 256
+learning_rate: 0.0003
+gamma: 0.99
+embedding_dim: 64
+hidden_dim: 64
+action_bank_size: 121
+max_trajectories: 300
+crowding_threshold: 0.2
+crowding_penalty: 0.01
+exploration_scale: 1.0
+stochastic_train_policy: true
+num_eval_targets: 15
+eval_episodes: 5
+baseline_total_timesteps: 75000
+baseline_num_er_episodes: 40
+baseline_num_step_episodes: 6
+baseline_num_model_updates: 250
+baseline_max_buffer_size: 300
+baseline_num_points_pf: 15
+baseline_learning_rate: 0.0003
+baseline_batch_size: 256
+baseline_hidden_dim: 64
+baseline_noise: 0.2
+baseline_scaling_factor:
+- 0.01
+- 0.01
+- 0.01
+baseline_ref_point:
+- 0.0
+- -1000.0
+baseline_max_return:
+- 10000.0
+- 1000.0
+results_dir: pareto_conditioned_networks/results/report_halfcheetah_seed_0

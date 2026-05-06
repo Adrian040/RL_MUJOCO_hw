@@ -1,7 +1,10 @@
-numpy
-pandas
-matplotlib
-tqdm
-PyYAML
-mo-gymnasium[mujoco]
-morl-baselines
+numpy>=2.0,<2.3
+pandas>=2.2
+matplotlib>=3.8
+tqdm>=4.66
+PyYAML>=6.0
+
+# Gymnasium + MuJoCo:
+gymnasium[mujoco]>=1.0
+mujoco>=3.2
+mo-gymnasium[mujoco]>=1.3
